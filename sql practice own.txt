@@ -1,0 +1,178 @@
+---Creating table---
+create table Movies (movie_id int, movie_name varchar(255),release_year int,rental_rate int);
+select * from Movies
+---Inser values into column---
+insert into Movies (movie_id,movie_name,release_year,rental_rate)
+values ('1','vaarisu','2016','150'),('2','thunivu','2017','200'), ('3','vaathi','2022','175'),('4','connect','2025','100'),('5','nemo','2023','145');
+select * from Movies
+---Insert from another column---
+insert into Movies (movie_id, movie_name, release_year, rental_rate)
+select film_id, title, release_year ,rental_rate from film
+select * from Movies
+---Update records---
+update Movies
+set rental_rate = '9999'
+where release_year > '2022';
+select * from Movies
+ ---Delete records---
+Delete from Movies 
+where rental_rate ='9999';
+select * from Movies
+---Drop table---
+drop table Movies
+---where clause---
+select first_name,last_name,store_id from customer
+where store_id = 1
+---Order by---
+select first_name, last_name,address_id from customer
+order by address_id desc
+---null value--
+select address,phone from address
+where phone isnull
+--Distinct--
+select distinct release_year from film
+---constraints---
+select first_name,last_name from customer
+where first_name = 'A%' and last_name = '%l'
+--between--
+select address,city_id from address
+where city_id between 30 and 190
+---AND---
+select address,city_id,district from address
+where city_id between 30 and 190 and district = 'Texas'
+---OR---
+select * from inventory
+where film_id = 1 or film_id = 2
+---NOT---
+select * from city
+where NOT city_id= 200
+---constraints---
+create table Movies (movie_id int not null , movie_name varchar(255) primary key, release_year int,rental_rate int )
+select * from film where title='Graceland Dynamite'
+select * from inventory where film_id=372
+select * from rental where inventory_id in (1706,1707)
+
+---AGGREGATES---
+---2----
+select f.title,count(r.*) from film f
+inner join inventory i on i.film_id= f.film_id
+inner join rental r on i.inventory_id=r.inventory_id
+ group by f.title 
+ order by count(r.*) desc
+ ---1---
+ fetch first 1 rows only
+ ---3----
+select actor.first_name,actor.last_name,count(film.title)
+from actor
+inner join  film_actor on actor.actor_id=film_actor.actor_id
+inner join film on film_actor.film_id=film.film_id
+group by actor.first_name, actor.last_name
+order by count(film.title) desc
+---4---
+select actor.first_name,actor.last_name,count(film.title)
+from actor
+inner join  film_actor on actor.actor_id=film_actor.actor_id
+inner join film on film_actor.film_id=film.film_id
+group by actor.first_name, actor.last_name
+having count(film.title)>20
+order by count(film.title) desc
+---5---
+select s.store_id, count(customer.first_name || ''|| customer.last_name)
+from store s
+inner join customer on s.store_id=customer.store_id
+group by s.store_id
+order by count(customer.first_name || ''|| customer.last_name) desc
+---6---
+select payment.customer_id,sum(payment.amount)
+from payment
+inner join customer on payment.customer_id=customer.customer_id
+group by payment.customer_id
+order by sum(payment.amount) desc
+---7---
+select payment.customer_id, customer.first_name || '' || customer.last_name, sum(payment.amount)
+from payment
+inner join customer on payment.customer_id=customer.customer_id
+group by payment.customer_id,customer.first_name || '' || customer.last_name
+order by sum(payment.amount) desc
+fetch first 1 rows only
+---8---
+select f.title,count(r.*) as Rented_count from film f
+inner join inventory i on i.film_id= f.film_id
+inner join rental r on i.inventory_id=r.inventory_id
+ group by f.title 
+ order by count(r.*) desc
+ ---9---
+ select actor.first_name from actor
+ where length(first_name)=8
+---10---
+select distinct film.title,store.store_id 
+from film 
+inner join inventory on inventory.film_id= film.film_id
+inner join store on inventory.store_id=store.store_id
+ where store.store_id=1  and film.title not in ( select   film.title 
+from film 
+inner join inventory on inventory.film_id= film.film_id
+inner join store on inventory.store_id=store.store_id
+ where store.store_id=2) order by film.title desc
+ ---11---
+select f.title,count(r.*) as most_rented from film f
+inner join inventory i on i.film_id= f.film_id
+inner join rental r on i.inventory_id=r.inventory_id
+inner join store on i.store_id=store.store_id
+where store.store_id=1
+group by f.title 
+order by count(r.*) desc
+fetch first 1 rows only
+
+
+
+
+
+---1---
+select customer.first_name || ' ' || customer.last_name as customers,EXTRACT(DAY FROM return_date-rental_date) as  DateDifference
+from customer
+inner join rental on customer.customer_id=rental.customer_id
+where  EXTRACT(DAY FROM return_date-rental_date)    >= 5
+
+---ANOTHER METHOD 1---
+select customer.first_name || ' ' || customer.last_name as customers,EXTRACT(DAY FROM return_date-rental_date) as  DateDifference into TEMP TABLE toki
+from customer
+inner join rental on customer.customer_id=rental.customer_id;
+---2---
+select city.city,store.store_id, count(staff.*)
+from city
+inner join address on city.city_id=address.city_id
+inner join store on address.address_id=store.address_id
+inner join staff on store.store_id=staff.store_id
+group by city.city,store.store_id
+---3---
+select city.city,staff.first_name || ' ' || staff.last_name, count(staff.*)
+from city
+inner join address on city.city_id=address.city_id
+inner join store on address.address_id=store.address_id
+inner join staff on store.store_id=staff.store_id
+where city = 'Barcelona'
+group by city.city,staff.first_name || ' ' || staff.last_name
+---4---
+select store.store_id,address.address from store
+inner join address on store.address_id=address.address_id
+group by store.store_id,address.address
+---5---
+select film.title,count(inventory.*) as max_inventory from film 
+inner join inventory on film.film_id=inventory.film_id
+group by film.title
+order by count(inventory.*) desc
+---6---
+select store.store_id, count(inventory.*) as max_inventory from store
+inner join inventory on store.store_id=inventory.store_id
+group by store.store_id
+order by count(inventory.*)
+fetch first 1 rows only
+---7---
+
+
+
+
+
+ 
+
